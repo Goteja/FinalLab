@@ -198,6 +198,10 @@ interface Tunnel0
  tunnel source GigabitEthernet0/0  
  tunnel destination 203.0.113.18
 
+ip route 0.0.0.0 0.0.0.0 203.0.113.25
+router ospf 1
+ default-information originate
+
 ip dhcp excluded-address 192.168.30.1 192.168.30.10  
 ip dhcp excluded-address 192.168.40.1 192.168.40.10  
   
