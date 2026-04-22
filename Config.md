@@ -241,6 +241,7 @@ interface GigabitEthernet0/1.30
  standby 30 ip 192.168.30.1  
  standby 30 priority 110  
  standby 30 preempt  
+ ip helper-address 10.0.40.1
   
 interface GigabitEthernet0/1.40  
  encapsulation dot1Q 40  
@@ -248,6 +249,7 @@ interface GigabitEthernet0/1.40
  standby 40 ip 192.168.40.1  
  standby 40 priority 110  
  standby 40 preempt
+ ip helper-address 10.0.40.1
 
 int g0/1
  no sh
@@ -272,6 +274,7 @@ interface GigabitEthernet0/1.30
  standby 30 ip 192.168.30.1  
  standby 30 priority 100  
  standby 30 preempt  
+ ip helper-address 10.0.40.1
   
 interface GigabitEthernet0/1.40  
  encapsulation dot1Q 40  
@@ -279,6 +282,7 @@ interface GigabitEthernet0/1.40
  standby 40 ip 192.168.40.1  
  standby 40 priority 100  
  standby 40 preempt
+ ip helper-address 10.0.40.1
 
 int g0/1
  no sh
