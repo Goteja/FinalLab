@@ -318,7 +318,18 @@ interface G0/0
  switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 30,40
+
+interface G0/1
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+
+interface G0/2
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
 ```
+
 ### S6
 ```
 hostname S6
@@ -341,6 +352,12 @@ interface G0/0
  switchport trunk encapsulation dot1q
  switchport mode trunk
  switchport trunk allowed vlan 30,40
+
+interface G0/1
+ switchport mode access
+ switchport access vlan 30
+ spanning-tree portfast
+
 ```
 
 ### S6
