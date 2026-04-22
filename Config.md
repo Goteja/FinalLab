@@ -249,6 +249,12 @@ interface GigabitEthernet0/1.40
 
 int g0/1
  no sh
+
+router ospf 1
+ router-id 5.5.5.5
+ network 10.0.40.0 0.0.0.255 area 0
+ network 192.168.30.0 0.0.0.255 area 0
+ network 192.168.40.0 0.0.0.255 area 0
 ```
 ### R6 (Standby)
 ```
@@ -274,6 +280,12 @@ interface GigabitEthernet0/1.40
 
 int g0/1
  no sh
+
+router ospf 1
+ router-id 6.6.6.6
+ network 10.0.40.0 0.0.0.255 area 0
+ network 192.168.30.0 0.0.0.255 area 0
+ network 192.168.40.0 0.0.0.255 area 0
 ```
 ---
 
