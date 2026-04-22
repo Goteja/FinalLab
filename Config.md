@@ -191,11 +191,13 @@ interface GigabitEthernet0/0
  description Link to R3  
  ip address 203.0.113.26 255.255.255.252  
  no shutdown  
+ ip nat outside
   
 interface GigabitEthernet0/1  
  description Link to S4  
  ip address 10.0.40.1 255.255.255.0  
  no shutdown  
+ ip nat inside
   
 interface Tunnel0  
  ip address 172.16.1.2 255.255.255.252  
@@ -223,6 +225,10 @@ router ospf 1
  router-id 4.4.4.4  
  network 10.0.40.0 0.0.0.255 area 0  
  network 172.16.1.0 0.0.0.3 area 1
+
+access-list 1 permit 192.168.30.0 0.0.0.255
+access-list 1 permit 192.168.40.0 0.0.0.255
+ip nat inside source list 1 interface GigabitEthernet0/0 overload
 ```
 
 ---
