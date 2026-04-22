@@ -154,10 +154,12 @@ vlan 20
   
 interface Vlan10  
  ip address 192.168.10.1 255.255.255.0  
+ ip helper-address 10.0.20.1
  no shutdown  
   
 interface Vlan20  
  ip address 192.168.20.1 255.255.255.0  
+ ip helper-address 10.0.20.1
  no shutdown  
   
 interface GigabitEthernet0/0  
