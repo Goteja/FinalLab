@@ -109,6 +109,13 @@ interface GigabitEthernet0/2
  ip nat outside  
   
 ip route 0.0.0.0 0.0.0.0 203.0.113.17
+
+## Маршруты прописать надо?
+ip route 192.168.10.0 255.255.255.0 10.0.20.2
+ip route 192.168.20.0 255.255.255.0 10.0.20.2
+router ospf 1
+ redistribute static subnets
+ default-information originate
 ```
 ---
 
