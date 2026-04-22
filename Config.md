@@ -116,6 +116,8 @@ ip route 192.168.20.0 255.255.255.0 10.0.20.2
 router ospf 1
  redistribute static subnets
  default-information originate
+
+ip nat inside source static 192.168.100.2 203.0.113.19
 ```
 ---
 
