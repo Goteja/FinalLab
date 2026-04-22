@@ -110,7 +110,6 @@ interface GigabitEthernet0/2
   
 ip route 0.0.0.0 0.0.0.0 203.0.113.17
 
-## Маршруты прописать надо?
 ip route 192.168.10.0 255.255.255.0 10.0.20.2
 ip route 192.168.20.0 255.255.255.0 10.0.20.2
 router ospf 1
@@ -203,6 +202,7 @@ interface Tunnel0
  ip address 172.16.1.2 255.255.255.252  
  tunnel source GigabitEthernet0/0  
  tunnel destination 203.0.113.18
+ ip nat inside
 
 ip route 0.0.0.0 0.0.0.0 203.0.113.25
 router ospf 1
@@ -267,6 +267,8 @@ router ospf 1
  network 10.0.40.0 0.0.0.255 area 0
  network 192.168.30.0 0.0.0.255 area 0
  network 192.168.40.0 0.0.0.255 area 0
+ passive-interface GigabitEthernet0/1.30
+ passive-interface GigabitEthernet0/1.40
 ```
 ### R6 (Standby)
 ```
@@ -300,6 +302,8 @@ router ospf 1
  network 10.0.40.0 0.0.0.255 area 0
  network 192.168.30.0 0.0.0.255 area 0
  network 192.168.40.0 0.0.0.255 area 0
+ passive-interface GigabitEthernet0/1.30
+ passive-interface GigabitEthernet0/1.40
 ```
 ---
 
@@ -366,17 +370,6 @@ interface G0/1
  switchport access vlan 30
  spanning-tree portfast
 
-```
-
-### S6
-```
-hostname S6
-
-interface range GigabitEthernet0/2, GigabitEthernet0/3  
- channel-group 1 mode active  
-  
-interface Port-channel1  
- switchport mode trunk
 ```
 
 ### Server
