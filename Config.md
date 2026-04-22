@@ -295,21 +295,46 @@ router ospf 1
 ```
 hostname S5
 
+vlan 30
+ name VLAN_C
+vlan 40
+ name VLAN_D
+exit
+
 interface range GigabitEthernet0/3, GigabitEthernet1/0  
  channel-group 1 mode active  
   
 interface Port-channel1  
  switchport mode trunk
+ switchport trunk allowed vlan all
+
+interface G0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,40
 ```
 ### S6
 ```
 hostname S6
 
+vlan 30
+ name VLAN_C
+vlan 40
+ name VLAN_D
+
 interface range GigabitEthernet0/2, GigabitEthernet0/3  
  channel-group 1 mode active  
   
-interface Port-channel1  
+interface Port-channel 1
+ switchport trunk encapsulation dot1q
  switchport mode trunk
+ switchport trunk allowed vlan all
+ exit
+
+interface G0/0
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk allowed vlan 30,40
 ```
 
 ### S6
