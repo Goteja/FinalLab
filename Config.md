@@ -293,3 +293,26 @@ interface range GigabitEthernet0/2, GigabitEthernet0/3
 interface Port-channel1  
  switchport mode trunk
 ```
+
+### S6
+```
+hostname S6
+
+interface range GigabitEthernet0/2, GigabitEthernet0/3  
+ channel-group 1 mode active  
+  
+interface Port-channel1  
+ switchport mode trunk
+```
+
+### Server
+```
+sudo ip addr add 192.168.100.2/24 dev ens3
+sudo ip route add default via 192.168.100.1
+```
+
+### PC3
+```
+sudo ip addr add 203.0.113.2/28 dev ens3
+sudo ip route add default via 203.0.113.1
+```
