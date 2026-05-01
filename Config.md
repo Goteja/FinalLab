@@ -53,91 +53,155 @@ router ospf 1
 
 ## 🌐 R2
 ```
-hostname R2  
-  
-interface GigabitEthernet0/1  
- description Link to R1  
- ip address 10.0.12.2 255.255.255.252  
- no shutdown  
-  
-interface GigabitEthernet0/0  
- description Link to S2  
- ip address 10.0.20.1 255.255.255.252  
- no shutdown  
-  
-interface GigabitEthernet0/2  
- description Link to R3 (ISP)  
- ip address 203.0.113.18 255.255.255.248  
- no shutdown  
-  
-interface Tunnel0  
- ip address 172.16.1.1 255.255.255.252  
- tunnel source GigabitEthernet0/2  
- tunnel destination 203.0.113.26
 
-ip dhcp excluded-address 192.168.10.1 192.168.10.10  
-ip dhcp excluded-address 192.168.20.1 192.168.20.10  
-  
-ip dhcp pool VLAN_A  
- network 192.168.10.0 255.255.255.0  
- default-router 192.168.10.1  
- dns-server 8.8.8.8  
-  
-ip dhcp pool VLAN_B  
- network 192.168.20.0 255.255.255.0  
- default-router 192.168.20.1  
- dns-server 8.8.8.8
+enable
+configure terminal
+hostname R2
+no ip domain-lookup
 
-router ospf 1  
- router-id 2.2.2.2  
- network 10.0.12.0 0.0.0.3 area 1  
- network 172.16.1.0 0.0.0.3 area 1  
- passive-interface GigabitEthernet0/0
+interface GigabitEthernet0/1
+ ip address 10.0.12.2 255.255.255.252
+ no shutdown
+ exit
+ 
+interface GigabitEthernet0/0
+ ip address 10.0.20.1 255.255.255.252
+ no shutdown
+ exit
 
-access-list 1 permit 192.168.0.0 0.0.255.255  
-access-list 1 permit 192.168.100.0 0.0.0.255  
-  
-ip nat inside source list 1 interface GigabitEthernet0/2 overload  
-  
-interface GigabitEthernet0/1  
- ip nat inside  
-interface GigabitEthernet0/0  
- ip nat inside  
-interface Tunnel0  
- ip nat inside  
-interface GigabitEthernet0/2  
- ip nat outside  
-  
-ip route 0.0.0.0 0.0.0.0 203.0.113.17
+interface GigabitEthernet0/2
+ no ip address
+ pppoe enable
+ pppoe-client dial-pool-number 1
+ no shutdown
+ exit
+
+interface Dialer1
+ mtu 1492
+ ip address negotiated
+ encapsulation ppp
+ ppp authentication chap callin
+ ppp chap hostname Branch1
+ ppp chap password 0 SecurePass123
+ dialer pool 1
+ no shutdown
+ exit
+
+interface Tunnel0
+ ip address 172.16.1.1 255.255.255.252
+ tunnel source Dialer1
+ tunnel destination 203.0.113.19
+ keepalive 10 3
+ exit
+
+router ospf 1
+ router-id 2.2.2.2
+ network 10.0.12.0 0.0.0.3 area 0
+ network 10.0.20.0 0.0.0.3 area 0
+ network 172.16.1.0 0.0.0.3 area 0
+ passive-interface default
+ no passive-interface GigabitEthernet0/0
+ no passive-interface GigabitEthernet0/1
+ no passive-interface Tunnel0
+ exit
 
 ip route 192.168.10.0 255.255.255.0 10.0.20.2
 ip route 192.168.20.0 255.255.255.0 10.0.20.2
+
+ip route 0.0.0.0 0.0.0.0 Dialer1
+
+access-list 10 permit 192.168.100.0 0.0.0.255
+access-list 10 permit 192.168.10.0 0.0.0.255
+access-list 10 permit 192.168.20.0 0.0.0.255
+ip nat inside source list 10 interface Dialer1 overload
+
+interface GigabitEthernet0/0
+ ip nat inside
+ exit
+interface GigabitEthernet0/1
+ ip nat inside
+ exit
+interface Tunnel0
+ ip nat inside
+ exit
+interface Dialer1
+ ip nat outside
+ exit
+ 
+ip nat inside source static tcp 192.168.100.2 80 interface Dialer1 80
+
+ip dhcp pool VLAN_A
+ network 192.168.10.0 255.255.255.0
+ default-router 192.168.10.1
+ dns-server 8.8.8.8
+ exit
+ip dhcp pool VLAN_B
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ dns-server 8.8.8.8
+ exit
+ 
+ip dhcp excluded-address 192.168.10.1
+ip dhcp excluded-address 192.168.20.1
+
 router ospf 1
  redistribute static subnets
- default-information originate
-
-ip nat inside source static 192.168.100.2 203.0.113.19
+ exit
+ 
+interface Loopback1
+ ip address 203.0.113.33 255.255.255.255
+ description Static NAT for Server
+ no shutdown
+ exit
+ 
+ip nat inside source static 192.168.100.2 203.0.113.33
 ```
 ---
 
 ## 🌐 R3 (ISP)
 ```
-hostname R3  
-  
-interface GigabitEthernet0/0  
- description Link to R2  
- ip address 203.0.113.17 255.255.255.248  
- no shutdown  
-  
-interface GigabitEthernet0/1  
- description Internet Segment  
- ip address 203.0.113.1 255.255.255.240  
- no shutdown  
-  
-interface GigabitEthernet0/2  
- description Link to R4  
- ip address 203.0.113.25 255.255.255.252  
+enable
+configure terminal
+hostname R3
+no ip domain-lookup
+
+interface GigabitEthernet0/1
+ ip address 203.0.113.1 255.255.255.240
  no shutdown
+ exit
+
+bba-group pppoe GLOBAL
+ virtual-template 1
+ exit
+
+interface Virtual-Template1
+ ip unnumbered GigabitEthernet0/1
+ peer default ip address pool PPP_POOL
+ ppp authentication chap
+ ppp ipcp dns 8.8.8.8
+ no shutdown
+ exit
+ 
+ip local pool PPP_POOL 203.0.113.18 203.0.113.22
+
+username Branch1 password 0 SecurePass123
+username Branch2 password 0 SecurePass123
+
+interface GigabitEthernet0/0
+ no ip address
+ pppoe enable group GLOBAL
+ no shutdown
+ exit
+ 
+interface GigabitEthernet0/2
+ no ip address
+ pppoe enable group GLOBAL
+ no shutdown
+ exit
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+
+ip route 203.0.113.33 255.255.255.255 203.0.113.18
 ```
 > ❗ R3 содержит **только напрямую подключённые маршруты**, как требуется.
 
@@ -184,51 +248,86 @@ ip route 0.0.0.0 0.0.0.0 10.0.20.1
 ## 🌐 R4
 
 ```
-hostname R4  
-  
-interface GigabitEthernet0/0  
- description Link to R3  
- ip address 203.0.113.26 255.255.255.252  
- no shutdown  
- ip nat outside
-  
-interface GigabitEthernet0/1  
- description Link to S4  
- ip address 10.0.40.1 255.255.255.0  
- no shutdown  
- ip nat inside
-  
-interface Tunnel0  
- ip address 172.16.1.2 255.255.255.252  
- tunnel source GigabitEthernet0/0  
+
+enable
+configure terminal
+hostname R4
+no ip domain-lookup
+
+interface GigabitEthernet0/1
+ ip address 10.0.40.1 255.255.255.0
+ no shutdown
+ exit
+
+interface GigabitEthernet0/0
+ no ip address
+ pppoe enable
+ pppoe-client dial-pool-number 1
+ no shutdown
+ exit
+
+interface Dialer1
+ mtu 1492
+ ip address negotiated
+ encapsulation ppp
+ ppp authentication chap callin
+ ppp chap hostname Branch2
+ ppp chap password 0 SecurePass123
+ dialer pool 1
+ no shutdown
+ exit
+
+interface Tunnel0
+ ip address 172.16.1.2 255.255.255.252
+ tunnel source Dialer1
  tunnel destination 203.0.113.18
- ip nat inside
+ keepalive 10 3
+ exit
 
-ip route 0.0.0.0 0.0.0.0 203.0.113.25
 router ospf 1
- default-information originate
+ router-id 4.4.4.4
+ network 10.0.40.0 0.0.0.255 area 0
+ network 172.16.1.0 0.0.0.3 area 0
+ passive-interface default
+ no passive-interface GigabitEthernet0/1
+ no passive-interface Tunnel0
+ default-information originate always
+ exit
 
-ip dhcp excluded-address 192.168.30.1 192.168.30.10  
-ip dhcp excluded-address 192.168.40.1 192.168.40.10  
-  
-ip dhcp pool VLAN_C  
- network 192.168.30.0 255.255.255.0  
- default-router 192.168.30.1  
- dns-server 8.8.8.8  
-  
-ip dhcp pool VLAN_D  
- network 192.168.40.0 255.255.255.0  
- default-router 192.168.40.1  
+ip route 0.0.0.0 0.0.0.0 Dialer1
+
+access-list 10 permit 192.168.30.0 0.0.0.255
+access-list 10 permit 192.168.40.0 0.0.0.255
+ip nat inside source list 10 interface Dialer1 overload
+
+interface GigabitEthernet0/1
+ ip nat inside
+ exit
+interface Tunnel0
+ ip nat inside
+ exit
+interface Dialer1
+ ip nat outside
+ exit
+
+ip dhcp excluded-address 192.168.30.1 192.168.30.3
+ip dhcp excluded-address 192.168.40.1 192.168.40.3
+
+ip dhcp pool VLAN_C
+ network 192.168.30.0 255.255.255.0
+ default-router 192.168.30.1
  dns-server 8.8.8.8
+ exit
+ip dhcp pool VLAN_D
+ network 192.168.40.0 255.255.255.0
+ default-router 192.168.40.1
+ dns-server 8.8.8.8
+ exit
+ 
+router ospf 1
+ redistribute static subnets
+ exit
 
-router ospf 1  
- router-id 4.4.4.4  
- network 10.0.40.0 0.0.0.255 area 0  
- network 172.16.1.0 0.0.0.3 area 1
-
-access-list 1 permit 192.168.30.0 0.0.0.255
-access-list 1 permit 192.168.40.0 0.0.0.255
-ip nat inside source list 1 interface GigabitEthernet0/0 overload
 ```
 
 ---
